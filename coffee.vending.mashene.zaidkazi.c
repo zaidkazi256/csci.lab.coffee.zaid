@@ -1,13 +1,24 @@
 #include <stdio.h>
 #include <string.h>
 
-// Ingredient stock and prices
-int beans = 100, water = 100, milk = 100, chocolate = 100;
+#define ADMIN_PASSWORD "uowd"
+#define ESPRESSO_BEANS 8
+#define ESPRESSO_WATER 30
+#define CAPPUCCINO_BEANS 8
+#define CAPPUCCINO_WATER 30
+#define CAPPUCCINO_MILK 70
+#define MOCHA_BEANS 8
+#define MOCHA_WATER 39
+#define MOCHA_MILK 160
+#define MOCHA_CHOCOLATE 30
+
+int beans = 1000, water = 1000, milk = 1000, chocolate = 1000;
 float espresso_price = 3.5, cappuccino_price = 4.5, mocha_price = 5.5;
 float total_sales = 0.0;
 
 void order_coffee();
 void admin_mode();
+void check_low_thresholds();
 
 int main() {
     int option;
@@ -44,21 +55,22 @@ void order_coffee() {
     printf("Enter your coffee choice: ");
     scanf("%d", &coffee_choice);
     
+    // Check ingredient availability
     if (coffee_choice == 1) {
         coffee_price = espresso_price;
-        if (beans < 8 || water < 30) {
+        if (beans < ESPRESSO_BEANS || water < ESPRESSO_WATER) {
             printf("Not enough ingredients for Espresso.\n");
             return;
         }
     } else if (coffee_choice == 2) {
         coffee_price = cappuccino_price;
-        if (beans < 8 || water < 30 || milk < 70) {
+        if (beans < CAPPUCCINO_BEANS || water < CAPPUCCINO_WATER || milk < CAPPUCCINO_MILK) {
             printf("Not enough ingredients for Cappuccino.\n");
             return;
         }
     } else if (coffee_choice == 3) {
         coffee_price = mocha_price;
-        if (beans < 8 || water < 39 || milk < 160 || chocolate < 30) {
+        if (beans < MOCHA_BEANS || water < MOCHA_WATER || milk < MOCHA_MILK || chocolate < MOCHA_CHOCOLATE) {
             printf("Not enough ingredients for Mocha.\n");
             return;
         }
@@ -67,6 +79,7 @@ void order_coffee() {
         return;
     }
 
+    // Handle payment
     while (money_inserted < coffee_price) {
         float coin;
         printf("Insert coin (0.5 or 1 AED): ");
@@ -82,35 +95,68 @@ void order_coffee() {
     
     // Update ingredients
     if (coffee_choice == 1) {
-        beans -= 8;
-        water -= 30;
+        beans -= ESPRESSO_BEANS;
+        water -= ESPRESSO_WATER;
     } else if (coffee_choice == 2) {
-        beans -= 8;
-        water -= 30;
-        milk -= 70;
+        beans -= CAPPUCCINO_BEANS;
+        water -= CAPPUCCINO_WATER;
+        milk -= CAPPUCCINO_MILK;
     } else if (coffee_choice == 3) {
-        beans -= 8;
-        water -= 39;
-        milk -= 160;
-        chocolate -= 30;
+        beans -= MOCHA_BEANS;
+        water -= MOCHA_WATER;
+        milk -= MOCHA_MILK;
+        chocolate -= MOCHA_CHOCOLATE;
     }
     
     total_sales += coffee_price;
+    check_low_thresholds();
+}
+
+void check_low_thresholds() {
+    if (beans <= 10) printf("Alert: Low on beans!\n");
+    if (water <= 10) printf("Alert: Low on water!\n");
+    if (milk <= 10) printf("Alert: Low on milk!\n");
+    if (chocolate <= 10) printf("Alert: Low on chocolate!\n");
 }
 
 void admin_mode() {
-    printf("Beans: %d, Water: %d, Milk: %d, Chocolate: %d\n", beans, water, milk, chocolate);
-    printf("Total sales: %.2f AED\n", total_sales);
+    char password[20];
+    printf("Enter admin password: ");
+    scanf("%s", password);
     
-    printf("Do you want to refill ingredients? (1 for Yes, 0 for No): ");
-    int refill;
-    scanf("%d", &refill);
-    
-    if (refill == 1) {
-        beans = 100;
-        water = 100;
-        milk = 100;
-        chocolate = 100;
-        printf("Ingredients refilled.\n");
+    if (strcmp(password, ADMIN_PASSWORD) != 0) {
+        printf("Incorrect password.\n");
+        return;
+    }
+
+    int option;
+    while (1) {
+        printf("1. Display quantities and total sales\n");
+        printf("2. Refill ingredients\n");
+        printf("3. Change coffee prices\n");
+        printf("0. Exit Admin Mode\n");
+        printf("Enter your choice: ");
+        scanf("%d", &option);
+        
+        if (option == 1) {
+            printf("Beans: %d, Water: %d, Milk: %d, Chocolate: %d\n", beans, water, milk, chocolate);
+            printf("Total sales: %.2f AED\n", total_sales);
+        } else if (option == 2) {
+            beans = 1000; // Resetting to a defined maximum
+            water = 1000;
+            milk = 1000;
+            chocolate = 1000;
+            printf("Ingredients refilled.\n");
+        } else if (option == 3) {
+            float new_price;
+            printf("Enter new price for Espresso: ");
+            scanf("%f", &new_price);
+            espresso_price = new_price;
+            printf("New price set for Espresso: %.2f AED\n", espresso_price);
+        } else if (option == 0) {
+            break; // Exit admin mode
+        } else {
+            printf("Invalid option. Try again.\n");
+        }
     }
 }
